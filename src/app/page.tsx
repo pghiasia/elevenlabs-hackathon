@@ -1,27 +1,65 @@
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { Mic } from "lucide-react"
 
-const products = [
-  { id: 1, name: "BILLY Bookcase", image: "/placeholder.svg?height=200&width=200" },
-  { id: 2, name: "MALM Bed Frame", image: "/placeholder.svg?height=200&width=200" },
-  { id: 3, name: "POÄNG Armchair", image: "/placeholder.svg?height=200&width=200" },
-  { id: 4, name: "KALLAX Shelf Unit", image: "/placeholder.svg?height=200&width=200" },
-  { id: 5, name: "LACK Side Table", image: "/placeholder.svg?height=200&width=200" },
+const categories = [
+  { 
+    name: "Debate Coach", 
+    color: "red", 
+    description: "Sharpen your argumentation skills",
+    bgColor: "bg-red-900",
+    borderColor: "border-red-700",
+    textColor: "text-red-100",
+    descColor: "text-red-300",
+    buttonBg: "bg-red-700 hover:bg-red-600"
+  },
+  { 
+    name: "Interview Prep", 
+    color: "blue", 
+    description: "Ace your next job interview",
+    bgColor: "bg-blue-900",
+    borderColor: "border-blue-700",
+    textColor: "text-blue-100",
+    descColor: "text-blue-300",
+    buttonBg: "bg-blue-700 hover:bg-blue-600"
+  },
+  { 
+    name: "Presentation", 
+    color: "purple", 
+    description: "Captivate your audience",
+    bgColor: "bg-purple-900",
+    borderColor: "border-purple-700",
+    textColor: "text-purple-100",
+    descColor: "text-purple-300",
+    buttonBg: "bg-purple-700 hover:bg-purple-600"
+  },
 ]
 
 export default function Home() {
   return (
-    <main className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">IKEA Assembly Guide</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <Link href={`/product/${product.id}`} key={product.id}>
-            <Card className="hover:shadow-lg transition-shadow">
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="p-6 bg-gray-800">
+        <h1 className="text-3xl font-bold">Yapture</h1>
+        <p className="text-gray-300">Your AI Speech Expert</p>
+      </header>
+      <main className="container mx-auto p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <Card key={category.name} className={`${category.bgColor} ${category.borderColor}`}>
               <CardHeader>
-                <CardTitle>{product.name}</CardTitle>
+                <CardTitle className={category.textColor}>{category.name}</CardTitle>
+                <CardDescription className={category.descColor}>
+                  {category.description}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
+                <Link href={`/${category.name.toLowerCase().replace(" ", "-")}`}>
+                  <Button className={`w-full ${category.buttonBg}`}>
+                    <Mic className="mr-2 h-4 w-4" />
+                    Start Recording
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </Link>

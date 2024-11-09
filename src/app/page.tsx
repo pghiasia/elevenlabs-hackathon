@@ -4,9 +4,36 @@ import Link from "next/link"
 import { Mic } from "lucide-react"
 
 const categories = [
-  { name: "Debate Coach", color: "red", description: "Sharpen your argumentation skills" },
-  { name: "Interview Prep", color: "blue", description: "Ace your next job interview" },
-  { name: "Presentation", color: "purple", description: "Captivate your audience" },
+  { 
+    name: "Debate Coach", 
+    color: "red", 
+    description: "Sharpen your argumentation skills",
+    bgColor: "bg-red-900",
+    borderColor: "border-red-700",
+    textColor: "text-red-100",
+    descColor: "text-red-300",
+    buttonBg: "bg-red-700 hover:bg-red-600"
+  },
+  { 
+    name: "Interview Prep", 
+    color: "blue", 
+    description: "Ace your next job interview",
+    bgColor: "bg-blue-900",
+    borderColor: "border-blue-700",
+    textColor: "text-blue-100",
+    descColor: "text-blue-300",
+    buttonBg: "bg-blue-700 hover:bg-blue-600"
+  },
+  { 
+    name: "Presentation", 
+    color: "purple", 
+    description: "Captivate your audience",
+    bgColor: "bg-purple-900",
+    borderColor: "border-purple-700",
+    textColor: "text-purple-100",
+    descColor: "text-purple-300",
+    buttonBg: "bg-purple-700 hover:bg-purple-600"
+  },
 ]
 
 export default function Home() {
@@ -19,16 +46,16 @@ export default function Home() {
       <main className="container mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {categories.map((category) => (
-            <Card key={category.name} className={`bg-${category.color}-900 border-${category.color}-700`}>
+            <Card key={category.name} className={`${category.bgColor} ${category.borderColor}`}>
               <CardHeader>
-                <CardTitle className={`text-xl text-${category.color}-100`}>{category.name}</CardTitle>
-                <CardDescription className={`text-${category.color}-300`}>
+                <CardTitle className={category.textColor}>{category.name}</CardTitle>
+                <CardDescription className={category.descColor}>
                   {category.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href={`/${category.name.toLowerCase().replace(" ", "-")}`}>
-                  <Button className={`w-full bg-${category.color}-700 hover:bg-${category.color}-600`}>
+                  <Button className={`w-full ${category.buttonBg}`}>
                     <Mic className="mr-2 h-4 w-4" />
                     Start Recording
                   </Button>

@@ -11,11 +11,18 @@ const categoryColors = {
   "Presentation": "purple",
 }
 
+const categoryHoverColors = {
+  "Debate Coach": "hover:bg-[#800000]",
+  "Interview Prep": "hover:bg-[#002b80]",
+  "Presentation": "hover:bg-[#3f0080]",
+}
+
 export default function RecordingInterface({ category }: { category: string }) {
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [feedback, setFeedback] = useState("")
   const color = categoryColors[category as keyof typeof categoryColors]
+  const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
 
   const startRecording = () => {
     setIsRecording(true)
@@ -64,8 +71,12 @@ export default function RecordingInterface({ category }: { category: string }) {
         )}
       </CardContent>
       <CardFooter className="justify-between">
-        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100`}>Save Recording</Button>
-        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100`}>Share Feedback</Button>
+        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}>
+          Save Recording
+        </Button>
+        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}>
+          Share Feedback
+        </Button>
       </CardFooter>
     </Card>
   )

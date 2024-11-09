@@ -39,9 +39,9 @@ const categories = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="p-6 bg-gray-800">
-        <h1 className="text-3xl font-bold">Yapture</h1>
-        <p className="text-gray-300">Your AI Speech Expert</p>
+      <header className="p-6 bg-gray-800 text-center">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold">Yapture</h1>
+        <p className="text-gray-300 text-lg md:text-xl lg:text-2xl mt-2">Your AI Speech Expert</p>
       </header>
       <main className="container mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

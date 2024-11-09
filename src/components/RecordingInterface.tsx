@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, StopCircle, Loader2 } from "lucide-react"
@@ -21,22 +21,63 @@ export default function RecordingInterface({ category }: { category: string }) {
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [feedback, setFeedback] = useState("")
+  const [audioURL, setAudioURL] = useState<string | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+
   const color = categoryColors[category as keyof typeof categoryColors]
   const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
 
-  const startRecording = () => {
-    setIsRecording(true)
-    // Implement actual recording logic here
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const url = URL.createObjectURL(audioBlob)
+        setAudioURL(url)
+        setIsProcessing(true)
+
+        // Simulate AI processing
+        setTimeout(() => {
+          setIsProcessing(false)
+          setFeedback("Great job! Here's some feedback on your speech...")
+        }, 3000)
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch (error) {
+      console.error("Error accessing microphone:", error)
+    }
   }
 
   const stopRecording = () => {
-    setIsRecording(false)
-    setIsProcessing(true)
-    // Simulate AI processing
-    setTimeout(() => {
-      setIsProcessing(false)
-      setFeedback("Great job! Here's some feedback on your speech...")
-    }, 3000)
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+      setIsRecording(false)
+    }
+  }
+
+  const saveRecording = () => {
+    if (!audioURL) return
+
+    const a = document.createElement("a")
+    a.href = audioURL
+    a.download = `${category}_recording.webm` // Change extension to .mp3 if converted
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
   }
 
   return (
@@ -71,7 +112,12 @@ export default function RecordingInterface({ category }: { category: string }) {
         )}
       </CardContent>
       <CardFooter className="justify-between">
-        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}>
+        <Button
+          variant="ghost"
+          className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}
+          onClick={saveRecording}
+          disabled={!audioURL}
+        >
           Save Recording
         </Button>
         <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}>

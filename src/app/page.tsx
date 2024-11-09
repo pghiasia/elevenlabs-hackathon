@@ -62,9 +62,9 @@ export default function Home() {
                 </Link>
               </CardContent>
             </Card>
-          </Link>
-        ))}
-      </div>
-    </main>
+          ))}
+        </div>
+      </main>
+    </div>
   )
 }

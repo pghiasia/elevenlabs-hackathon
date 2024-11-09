@@ -39,7 +39,7 @@ const categories = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0a2463] text-white">
-      <header className="p-6 bg-[#081b4f]">
+      <header className="p-6 bg-gray-800">
         <h1 className="text-3xl font-bold">Yapture</h1>
         <p className="text-gray-300">Your AI Speech Expert</p>
       </header>

@@ -8,21 +8,11 @@ const categories = [
     name: "Debate Coach", 
     color: "red", 
     description: "Sharpen your argumentation skills",
-    bgColor: "#d8315b",
+    bgColor: "bg-red-900",
     borderColor: "border-red-700",
     textColor: "text-red-100",
     descColor: "text-red-300",
     buttonBg: "bg-red-700 hover:bg-red-600"
-  },
-  { 
-    name: "Interview Prep", 
-    color: "blue", 
-    description: "Ace your next job interview",
-    bgColor: "bg-blue-900",
-    borderColor: "border-blue-700",
-    textColor: "text-blue-100",
-    descColor: "text-blue-300",
-    buttonBg: "bg-blue-700 hover:bg-blue-600"
   },
   { 
     name: "Presentation", 
@@ -34,12 +24,22 @@ const categories = [
     descColor: "text-purple-300",
     buttonBg: "bg-purple-700 hover:bg-purple-600"
   },
+  { 
+    name: "Interview Prep", 
+    color: "blue", 
+    description: "Ace your next job interview",
+    bgColor: "bg-blue-900",
+    borderColor: "border-blue-700",
+    textColor: "text-blue-100",
+    descColor: "text-blue-300",
+    buttonBg: "bg-blue-700 hover:bg-blue-600"
+  },
 ]
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#0a2463] text-white">
-      <header className="p-6 bg-[#081b4f]">
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="p-6 bg-gray-800">
         <h1 className="text-3xl font-bold">Yapture</h1>
         <p className="text-gray-300">Your AI Speech Expert</p>
       </header>

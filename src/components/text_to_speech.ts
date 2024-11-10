@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const ELEVENLABS_API_KEY = 'sk_54979d6a0ffced65ce14108910306c05c7944944bd50c99f';
+const ELEVENLABS_API_KEY = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
 
 if (!ELEVENLABS_API_KEY) {
   throw new Error("Missing ELEVENLABS_API_KEY in environment variables");

@@ -84,7 +84,7 @@ export default function RecordingInterface({ category }: { category: string }) {
               messages: [
                 {
                   role: 'system',
-                  content: `You are a professional ${category} coach. Analyze the following speech and provide 4-5 key points of constructive feedback. Be direct and concise (max 3 lines per point). ALWAYS format as a list of markdown bullet points using * for each point.`
+                  content: `You are a professional ${category} coach. Analyze the following speech and provide 4-5 of the best key points of constructive feedback. Be direct and concise (max 3 lines per point). ALWAYS format as a list of markdown bullet points using * for each point.`
                 },
                 {
                   role: 'user',
@@ -271,8 +271,21 @@ export default function RecordingInterface({ category }: { category: string }) {
         >
           Save Recording
         </Button>
-        <Button variant="ghost" className={`text-${color}-300 hover:text-${color}-100 ${hoverColor}`}>
-          Share Feedback
+        <Button 
+          variant="ghost" 
+          className={`text-${color}-300 hover:text-${color}-100 ${hoverColor} transition-all duration-300
+            ${improvedVersion ? 
+              category === "Presentation" ? 
+                'font-bold shadow-[0_0_15px_3px] shadow-purple-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-purple-500/75 hover:scale-105'
+              : category === "Debate Coach" ?
+                'font-bold shadow-[0_0_15px_3px] shadow-red-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-red-500/75 hover:scale-105'
+              : // Interview Prep
+                'font-bold shadow-[0_0_15px_3px] shadow-blue-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-blue-500/75 hover:scale-105'
+              : ''
+            }`}
+          disabled={!improvedVersion}
+        >
+          Hear It Improved
         </Button>
       </CardFooter>
     </Card>

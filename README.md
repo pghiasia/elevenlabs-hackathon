@@ -23,7 +23,7 @@ An AI-powered web application that helps users improve their public speaking ski
 ## Tech Stack 🛠️
 Frontend: Next.js (React.js, TypeScript, Tailwind CSS, shadcn/ui)
 
-AI/ML: OpenAI (GPT-4o, Whisper), ElevenLabs
+AI/ML: OpenAI (GPT-4o, Whisper), ElevenLabs (Text-to-Speech)
 
 ## Getting Started 🚀
 - Clone repository:

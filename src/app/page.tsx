@@ -41,6 +41,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="p-6 bg-gray-800 text-center">
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold">Yapture</h1>
+        <img src="/yapture.png" alt="Yapture" className="w-24 h-24 mx-auto" />
         <p className="text-gray-300 text-lg md:text-xl lg:text-2xl mt-2">Your AI Speech Expert</p>
       </header>
       <main className="container mx-auto p-6">

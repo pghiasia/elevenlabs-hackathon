@@ -41,17 +41,39 @@ export default function RecordingInterface({ category }: { category: string }) {
         }
       }
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
         const url = URL.createObjectURL(audioBlob)
         setAudioURL(url)
         setIsProcessing(true)
 
-        // Simulate AI processing
-        setTimeout(() => {
+        try {
+          // Create FormData to send the audio file
+          const formData = new FormData()
+          formData.append('file', audioBlob, 'audio.webm')
+          formData.append('model', 'whisper-1')
+
+          // Make request to OpenAI API
+          const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+            },
+            body: formData,
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to transcribe audio')
+          }
+
+          const data = await response.json()
+          setFeedback(data.text)
+        } catch (error) {
+          console.error('Error transcribing audio:', error)
+          setFeedback('Error transcribing audio. Please try again.')
+        } finally {
           setIsProcessing(false)
-          setFeedback("Great job! Here's some feedback on your speech...")
-        }, 3000)
+        }
       }
 
       mediaRecorder.start()

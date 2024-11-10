@@ -26,6 +26,7 @@ export default function RecordingInterface({ category }: { category: string }) {
   const audioChunksRef = useRef<Blob[]>([])
   const [analysis, setAnalysis] = useState("")
   const [improvedVersion, setImprovedVersion] = useState("")
+  const [transcribedText, setTranscribedText] = useState<string | null>(null)
 
   const color = categoryColors[category as keyof typeof categoryColors]
   const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
@@ -71,6 +72,7 @@ export default function RecordingInterface({ category }: { category: string }) {
           if (!transcriptionResponse.ok) throw new Error('Failed to transcribe audio')
           const transcriptionData = await transcriptionResponse.json()
           const transcribedText = transcriptionData.text
+          setTranscribedText(transcribedText)
 
           // Second API call - Get analysis feedback
           const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -229,13 +231,20 @@ export default function RecordingInterface({ category }: { category: string }) {
         {audioURL && (
           <div className={`bg-${color}-800 p-4 rounded-lg space-y-4`}>
             <div className="mb-4">
-              <h3 className={`text-lg font-semibold mb-2 text-${color}-100`}>Thank you for your speech! Here's your feedback: </h3>
+              <h3 className={`text-lg font-semibold mb-2 text-${color}-100`}>Thank you for your speech!</h3>
             </div>
             
             {isProcessing && (
               <div className={`text-center text-${color}-300`}>
                 <Loader2 className="h-8 w-8 animate-spin mx-auto" />
                 <p className="mt-2">Processing your speech...</p>
+              </div>
+            )}
+            
+            {transcribedText && (
+              <div className="mb-4">
+                <h4 className={`text-md font-semibold mb-2 text-${color}-100`}>Transcription</h4>
+                <p className={`text-${color}-300 whitespace-pre-wrap`}>{transcribedText}</p>
               </div>
             )}
             

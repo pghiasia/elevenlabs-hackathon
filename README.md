@@ -6,8 +6,8 @@ An AI-powered web application that helps users improve their public speaking ski
 ## Features 🌟
 - Three Specialized Categories
   - Debate Coach
-  - Interview Prep
   - Presentation Expert
+  - Interview Prep
 
 - AI-Powered Analysis
   - Speech transcription

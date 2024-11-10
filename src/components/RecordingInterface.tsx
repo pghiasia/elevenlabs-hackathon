@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, StopCircle, Loader2 } from "lucide-react"
 import ReactMarkdown from 'react-markdown'
+import { createAudioStreamFromText } from "./text_to_speech"
 
 const categoryColors = {
   "Debate Coach": "red",
@@ -27,6 +28,7 @@ export default function RecordingInterface({ category }: { category: string }) {
   const [analysis, setAnalysis] = useState("")
   const [improvedVersion, setImprovedVersion] = useState("")
   const [transcribedText, setTranscribedText] = useState<string | null>(null)
+  const [isGeneratingVoice, setIsGeneratingVoice] = useState(false)
 
   const color = categoryColors[category as keyof typeof categoryColors]
   const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
@@ -199,6 +201,27 @@ export default function RecordingInterface({ category }: { category: string }) {
     }
   }
 
+  const generateVoice = async () => {
+    if (!improvedVersion) return
+    
+    try {
+      setIsGeneratingVoice(true)
+      const audioStream = await createAudioStreamFromText(improvedVersion)
+      if (!audioStream) throw new Error('No audio stream returned')
+      
+      // Create a Blob from the audio stream before creating URL
+      const audioBlob = new Blob([audioStream], { type: 'audio/mpeg' })
+      const audio = new Audio()
+      audio.src = URL.createObjectURL(audioBlob)
+      await audio.play()
+    } catch (error) {
+      console.error('Error generating voice:', error)
+      // Optionally add toast/alert to notify user
+    } finally {
+      setIsGeneratingVoice(false)
+    }
+  }
+
   const saveRecording = () => {
     if (!audioURL) return
 
@@ -280,7 +303,8 @@ export default function RecordingInterface({ category }: { category: string }) {
         >
           Save Recording
         </Button>
-        <Button 
+        <Button
+          onClick={generateVoice} 
           variant="ghost" 
           className={`text-${color}-300 hover:text-${color}-100 ${hoverColor} transition-all duration-300
             ${improvedVersion ? 
@@ -292,9 +316,16 @@ export default function RecordingInterface({ category }: { category: string }) {
                 'font-bold shadow-[0_0_15px_3px] shadow-blue-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-blue-500/75 hover:scale-105'
               : ''
             }`}
-          disabled={!improvedVersion}
+          disabled={!improvedVersion || isGeneratingVoice}
         >
-          Hear It Improved
+          {isGeneratingVoice ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            'Hear It Improved'
+          )}
         </Button>
       </CardFooter>
     </Card>

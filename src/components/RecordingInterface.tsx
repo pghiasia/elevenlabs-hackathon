@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Mic, StopCircle, Loader2 } from "lucide-react"
+import { Mic, StopCircle, Loader2, Upload } from "lucide-react"
 import ReactMarkdown from 'react-markdown'
 import { createAudioStreamFromText } from "./text_to_speech"
 
@@ -29,6 +29,8 @@ export default function RecordingInterface({ category }: { category: string }) {
   const [improvedVersion, setImprovedVersion] = useState("")
   const [transcribedText, setTranscribedText] = useState<string | null>(null)
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const color = categoryColors[category as keyof typeof categoryColors]
   const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
@@ -233,14 +235,166 @@ export default function RecordingInterface({ category }: { category: string }) {
     document.body.removeChild(a)
   }
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsUploading(true)
+      setAnalysis("")
+      setImprovedVersion("")
+      setAudioURL(null)
+      setTranscribedText(null)
+      
+      // Create URL for the uploaded file
+      const url = URL.createObjectURL(file)
+      setAudioURL(url)
+      setIsProcessing(true)
+
+      // Process the uploaded file similar to recorded audio
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('model', 'whisper-1')
+
+      const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+        },
+        body: formData,
+      })
+
+      if (!transcriptionResponse.ok) throw new Error('Failed to transcribe audio')
+      const transcriptionData = await transcriptionResponse.json()
+      const transcribedText = transcriptionData.text
+      setTranscribedText(transcribedText)
+
+      // Get analysis feedback
+      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a professional ${category} coach. Analyze the following speech and provide 4-5 of the best key points of constructive feedback. Be direct and concise (max 3 lines per point). ALWAYS format as a list of markdown bullet points using * for each point.`
+            },
+            {
+              role: 'user',
+              content: transcribedText
+            }
+          ],
+          temperature: 0.1,
+          stream: true,
+        }),
+      })
+
+      if (!analysisResponse.ok) throw new Error('Failed to get analysis')
+
+      // Get improved version
+      const improvedResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a professional ${category} coach. Rewrite the following speech in a more polished and professional manner. Provide only the improved version, no explanations. Be concise but remain engaging. Maintain similar length if possible.`
+            },
+            {
+              role: 'user',
+              content: transcribedText
+            }
+          ],
+          temperature: 0.1,
+          stream: true,
+        }),
+      })
+
+      if (!improvedResponse.ok) throw new Error('Failed to get improved version')
+
+      // Handle analysis stream
+      const analysisReader = analysisResponse.body?.getReader()
+      const analysisDecoder = new TextDecoder()
+
+      while (analysisReader) {
+        const { value, done } = await analysisReader.read()
+        if (done) break
+
+        const chunk = analysisDecoder.decode(value)
+        const lines = chunk.split('\n')
+        
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue
+          if (line.includes('[DONE]')) continue
+          
+          try {
+            const json = JSON.parse(line.replace('data: ', ''))
+            const content = json.choices[0].delta.content || ''
+            setAnalysis(prev => prev + content)
+          } catch (e) {
+            console.error('Error parsing analysis stream:', e)
+          }
+        }
+      }
+
+      // Handle improved version stream
+      const improvedReader = improvedResponse.body?.getReader()
+      const improvedDecoder = new TextDecoder()
+
+      while (improvedReader) {
+        const { value, done } = await improvedReader.read()
+        if (done) break
+
+        const chunk = improvedDecoder.decode(value)
+        const lines = chunk.split('\n')
+        
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue
+          if (line.includes('[DONE]')) continue
+          
+          try {
+            const json = JSON.parse(line.replace('data: ', ''))
+            const content = json.choices[0].delta.content || ''
+            setImprovedVersion(prev => prev + content)
+          } catch (e) {
+            console.error('Error parsing improved version stream:', e)
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('Error processing uploaded file:', error)
+      setAnalysis('Error processing audio file. Please try again.')
+    } finally {
+      setIsUploading(false)
+      setIsProcessing(false)
+    }
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <Card className={`w-full max-w-2xl mx-auto bg-${color}-900 border-${color}-700`}>
       <CardHeader>
         <CardTitle className={`text-2xl text-${color}-100`}>{category}</CardTitle>
-        <CardDescription className={`text-${color}-300`}>Record your speech for AI feedback and an improved version that captures the same idea.</CardDescription>
+        <CardDescription className={`text-${color}-300`}>
+          Record your speech or upload an audio file (mp3, wav, webm, etc.) for AI feedback and an improved version that captures the same idea.
+          <br />
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
           {isRecording ? (
             <Button onClick={stopRecording} variant="destructive" size="lg" className="w-32 h-32 rounded-full">
               <StopCircle className="h-16 w-16" />
@@ -250,6 +404,31 @@ export default function RecordingInterface({ category }: { category: string }) {
               <Mic className="h-16 w-16" />
             </Button>
           )}
+
+          <div className="relative">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="audio/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="audio-upload"
+              disabled={isRecording || isUploading}
+            />
+            <Button
+              variant="outline"
+              size="lg"
+              className={`w-32 h-32 rounded-full bg-${color}-700 hover:bg-${color}-600`}
+              onClick={handleUploadClick}
+              disabled={isRecording || isUploading}
+            >
+              {isUploading ? (
+                <Loader2 className="h-16 w-16 animate-spin" />
+              ) : (
+                <Upload className="h-16 w-16" />
+              )}
+            </Button>
+          </div>
         </div>
         {audioURL && (
           <div className={`bg-${color}-800 p-4 rounded-lg space-y-4`}>

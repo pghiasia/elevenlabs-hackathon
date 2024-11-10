@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, StopCircle, Loader2 } from "lucide-react"
+import { createAudioStreamFromText } from "./text_to_speech"
 
 const categoryColors = {
   "Debate Coach": "red",
@@ -65,9 +66,16 @@ export default function RecordingInterface({ category }: { category: string }) {
           if (!response.ok) {
             throw new Error('Failed to transcribe audio')
           }
+          
+
 
           const data = await response.json()
+
           setFeedback(data.text)
+
+    
+          await createAudioStreamFromText(data.text);
+        
         } catch (error) {
           console.error('Error transcribing audio:', error)
           setFeedback('Error transcribing audio. Please try again.')

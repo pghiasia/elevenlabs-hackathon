@@ -13,11 +13,31 @@ const client = new ElevenLabsClient({
   apiKey: ELEVENLABS_API_KEY,
 });
 
+// Define voice IDs for each category and gender
+const CATEGORY_VOICES = {
+  "Presentation": {
+    male: "Brian",
+    female: "Matilda"
+  },
+  "Debate Coach": {
+    male: "Marshal",
+    female: "Rachel"
+  },
+  "Interview Prep": {
+    male: "Sully",
+    female: "Sarah"
+  }
+}
+
 export const createAudioStreamFromText = async (
   text: string,
+  category: string,
+  isMaleVoice: boolean
 ): Promise<Buffer> => {
+  const voiceId = CATEGORY_VOICES[category as keyof typeof CATEGORY_VOICES][isMaleVoice ? 'male' : 'female']
+  
   const audioStream = await client.generate({
-    voice: "Sully",
+    voice: voiceId,
     model_id: "eleven_turbo_v2_5",
     text,
   });

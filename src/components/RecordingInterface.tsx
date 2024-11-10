@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Mic, StopCircle, Loader2, Upload } from "lucide-react"
 import ReactMarkdown from 'react-markdown'
 import { createAudioStreamFromText } from "./text_to_speech"
+import { Switch } from "@/components/ui/switch"
 
 const categoryColors = {
   "Debate Coach": "red",
@@ -31,6 +32,7 @@ export default function RecordingInterface({ category }: { category: string }) {
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isMaleVoice, setIsMaleVoice] = useState(true)
 
   const color = categoryColors[category as keyof typeof categoryColors]
   const hoverColor = categoryHoverColors[category as keyof typeof categoryHoverColors]
@@ -41,6 +43,7 @@ export default function RecordingInterface({ category }: { category: string }) {
       setAnalysis("")
       setImprovedVersion("")
       setAudioURL(null)
+      setTranscribedText(null)
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mediaRecorder = new MediaRecorder(stream)
@@ -208,17 +211,15 @@ export default function RecordingInterface({ category }: { category: string }) {
     
     try {
       setIsGeneratingVoice(true)
-      const audioStream = await createAudioStreamFromText(improvedVersion)
+      const audioStream = await createAudioStreamFromText(improvedVersion, category, isMaleVoice)
       if (!audioStream) throw new Error('No audio stream returned')
       
-      // Create a Blob from the audio stream before creating URL
       const audioBlob = new Blob([audioStream], { type: 'audio/mpeg' })
       const audio = new Audio()
       audio.src = URL.createObjectURL(audioBlob)
       await audio.play()
     } catch (error) {
       console.error('Error generating voice:', error)
-      // Optionally add toast/alert to notify user
     } finally {
       setIsGeneratingVoice(false)
     }
@@ -482,30 +483,44 @@ export default function RecordingInterface({ category }: { category: string }) {
         >
           Save Recording
         </Button>
-        <Button
-          onClick={generateVoice} 
-          variant="ghost" 
-          className={`text-${color}-300 hover:text-${color}-100 ${hoverColor} transition-all duration-300
-            ${improvedVersion ? 
-              category === "Presentation" ? 
-                'font-bold shadow-[0_0_15px_3px] shadow-purple-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-purple-500/75 hover:scale-105'
-              : category === "Debate Coach" ?
-                'font-bold shadow-[0_0_15px_3px] shadow-red-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-red-500/75 hover:scale-105'
-              : // Interview Prep
-                'font-bold shadow-[0_0_15px_3px] shadow-blue-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-blue-500/75 hover:scale-105'
-              : ''
-            }`}
-          disabled={!improvedVersion || isGeneratingVoice}
-        >
-          {isGeneratingVoice ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            'Hear It Improved'
-          )}
-        </Button>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className={`text-${color}-300 text-sm`}>
+              {isMaleVoice ? 'Male' : 'Female'} Voice
+            </span>
+            <Switch
+              checked={isMaleVoice}
+              onCheckedChange={setIsMaleVoice}
+              color={color}
+            />
+          </div>
+          
+          <Button
+            onClick={generateVoice} 
+            variant="ghost" 
+            className={`text-${color}-300 hover:text-${color}-100 ${hoverColor} transition-all duration-300
+              ${improvedVersion ? 
+                category === "Presentation" ? 
+                  'font-bold shadow-[0_0_15px_3px] shadow-purple-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-purple-500/75 hover:scale-105'
+                : category === "Debate Coach" ?
+                  'font-bold shadow-[0_0_15px_3px] shadow-red-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-red-500/75 hover:scale-105'
+                : // Interview Prep
+                  'font-bold shadow-[0_0_15px_3px] shadow-blue-500/50 hover:shadow-[0_0_20px_5px] hover:shadow-blue-500/75 hover:scale-105'
+                : ''
+              }`}
+            disabled={!improvedVersion || isGeneratingVoice}
+          >
+            {isGeneratingVoice ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              'Hear It Improved'
+            )}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )
